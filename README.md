@@ -1,2 +1,5 @@
 # Ulti-Fi2
-Automate to
+- hello, dear users, visitors,
+- this is for ! EDUCATIONAL PURPOSES ONLY !
+- DO NOT USE IT FOR HARMFUL ACTIVITIES !
+- IAM NOT RESPONSINLE FOR ANY DAMAGES or LAW VIOLATION IF YOU MISUSE THIS !
